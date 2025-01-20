@@ -1,184 +1,111 @@
 <!DOCTYPE HTML>
-<html>
+<html lang="en">
 
 <head>
     <title>ESP32PP v0.16</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <style>
-        body {
-            box-sizing: border-box;
-            background-color: #120707;
-            color: white;
-            margin: 0;
-            padding: 3px;
-        }
-
-        h1,
-        h2 {
-            font-weight: bold;
-        }
-
-        .log {
-            background-color: black;
-            width: 99%;
-        }
-
-        .devremote {
-            width: 270px;
-            display: block;
-        }
-
-        .btnControl {
-            box-shadow: none;
-            border-radius: 10px;
-            padding: 0;
-            margin: 10px;
-            overflow: hidden;
-            width: 65px;
-            height: 65px;
-            display: inline;
-        }
-
-        .btnLine {
-            display: block;
-            text-align: center;
-        }
-
-        .greenbtn {
-            background-color: #00a96f;
-        }
-
-        .redbtn {
-            background-color: #ef4c53;
-        }
-
-        .yellowbtn {
-            background-color: #e0a700;
-        }
-
-        .bluebtn {
-            background-color: #00b3f0;
-        }
-
-        #mainscreencontent {
-            display: flex;
-        }
-
-        .management {
-            display: flex;
-            flex-wrap: wrap;
-            margin: 10px;
-        }
-
-        .screenholder {
-            display: block;
-            padding: 5px;
-        }
-
-        #screen {
-            width: 240px;
-            height: 320px;
-            box-shadow: 0px 0px 17px -3px rgba(255, 255, 255, 0.75);
-        }
-
-        #connState,
-        #connStatePP {
-            display: inline;
-        }
-
-        .setupicon {
-            float: right;
-            text-align: right;
-            font-size: 30px;
-        }
-
-        .setupicon a {
-            text-decoration: none;
-        }
-
-        #fileList {
-            min-width: 300px;
-        }
-
-        #fileProgress {
-            display: none;
-        }
-    </style>
+    <link rel="stylesheet" href="index.css">
 </head>
 
 <body>
-    <div class="setupicon"><a href="setup.html">&#9881;</a></div>
+    <header>
+        <h1>ESP32 PP v0.16</h1>
+        <div class="status">
+            <div id="connState">WS Connecting...</div>
+            <div id="connStatePP">PP not connected to ESP</div>
+        </div>
+        <div class="settings">
+            <a href="setup.html" title="Settings">&#9881;</a>
+        </div>
+    </header>
 
-    <h1>ESP32 PP v0.16</h1>
-    <div id="connState">WS Connecting...</div>
-    <div id="connStatePP">PP not connected to ESP</div>
-    <div class="management">
-        <div id="filemanager" style="display: none;">
-            Path: <span id="filePath">/</span><br />
-            <select id="fileList" size=20>
-            </select>
-            <br />
-            <button class="uicontrols" onclick="cwdup(); return false;">Cd ..</button>
-            <button class="uicontrols" onclick="ls(); return false;">Refresh</button>
-            <button class="uicontrols" onclick="fileDelete(); return false;">Delete</button><br />
-            <input class="uicontrols" type="file" id="fileUpfile" />
-            <button class="uicontrols" onclick="fileUpload(); return false;">Upload</button><br />
-            <button class="uicontrols" onclick="fileDownload(); return false;">Download</button>
-            <button class="uicontrols" onclick="fileFlash(); return false;">Flash</button><br /><br />
-            <button class="uicontrols" onclick="fileManClose(); return false;">Close file manager</button><br />
+    <main>
+        <section id="mainscreen">
+            <div class="screen-container">
+                <canvas id="screen" width="240" height="320">No GUI support</canvas>
+                <div class="screen-options">
+                    <input type="checkbox" id="screenRefresh" checked>
+                    <label for="screenRefresh">Auto refresh</label>
+                    <button id="bntRefresh" class="greenbtn uicontrols" onclick="refreshScreen()">Refresh</button>
+                </div>
+            </div>
+
+            <div class="controls">
+                <div class="btnLine">
+                    <div class="btnControl">&nbsp;</div>
+                    <button class="btnControl greenbtn" onclick="sendButton(4)">&uarr;</button>
+                    <div class="btnControl">&nbsp;</div>
+                </div>
+                <div class="btnLine">
+                    <button class="btnControl greenbtn" onclick="sendButton(2)">&larr;</button>
+                    <button class="btnControl bluebtn" onclick="sendButton(5)">O</button>
+                    <button class="btnControl greenbtn" onclick="sendButton(1)">&rarr;</button>
+                </div>
+                <div class="btnLine">
+                    <button class="btnControl greenbtn" onclick="sendButton(8)">&#8635;</button>
+                    <button class="btnControl greenbtn" onclick="sendButton(3)">&darr;</button>
+                    <button class="btnControl greenbtn" onclick="sendButton(7)">&#8634;</button>
+                </div>
+                <div class="btnLine">
+                    <button class="btnControl redbtn" onclick="sendButton(6)">DFU</button>
+                    <button class="btnControl redbtn" onclick="sendReboot()">RESET</button>
+                </div>
+            </div>
+
+            <div class="device-info">
+                <!-- First Row: Two Columns -->
+                <div class="device-row">
+                    <div id="devGpsLat">Lat: ?</div>
+                    <div id="devGpsLon">Lon: ?</div>
+                </div>
+                
+                <!-- Second Row: One Column -->
+                <div class="device-row single">
+                    <div id="devHead">Heading: ?</div>
+                </div>
+                
+                <!-- Third Row: Two Columns -->
+                <div class="device-row">
+                    <div id="devGpsSats">Sats: ?</div>
+                    <div id="devTemp">Temp: ?</div>
+                </div>
+                
+                <!-- Fourth Row: One Column with Buttons -->
+                <div class="device-actions">
+                    <button onclick="getGPSPosition();" class="uicontrols">&#128204;</button>
+                    <button class="uicontrols" onclick="fileManOpen()">File Manager</button>
+                </div>
+            </div>
+        </section>
+
+        <section id="filemanager" style="display: none;">
+            <h2>File Manager</h2>
+            <p>Path: <span id="filePath">/</span></p>
+            <select id="fileList" size="10"></select>
+            <div class="file-actions">
+                <button onclick="cwdup()">Cd ..</button>
+                <button onclick="ls()">Refresh</button>
+                <button onclick="fileDelete()">Delete</button>
+            </div>
+            <div class="file-upload">
+                <input type="file" id="fileUpfile">
+                <button onclick="fileUpload()">Upload</button>
+            </div>
+            <div class="file-management">
+                <button onclick="fileDownload()">Download</button>
+                <button onclick="fileFlash()">Flash</button>
+                <button onclick="fileManClose()">Close</button>
+            </div>
             <progress id="fileProgress" value="0" max="100"></progress>
+        </section>
 
-        </div>
-        <div id="mainscreencontent">
-            <div class="screenholder">
-                <canvas id="screen" height="320" width="240">No gui support</canvas>
-                <br />
-                <input type="checkbox" id="screenRefresh" name="autoScreenRefresh" checked />
-                <label for="screenRefresh">Auto refresh</label><br />
-                <button id="bntRefresh" class="greenbtn uicontrols" onclick="refreshScreen()">Refresh</button>
-            </div>
-            <div class="devremote">
-                <div class="btnLine">
-                    <div class="btnControl">&nbsp;</div>
-                    <button id="btnCtrUp" class="btnControl greenbtn uicontrols" onclick="sendButton(4)">&uarr;</button>
-                    <div class="btnControl">&nbsp;</div>
-                </div>
-                <div class="btnLine">
-                    <button id="btnCtrLeft" class="btnControl greenbtn uicontrols"
-                        onclick="sendButton(2)">&larr;</button>
-                    <button id="btnCtrEnter" class="btnControl bluebtn uicontrols" onclick="sendButton(5)">O</button>
-                    <button id="btnCtrRight" class="btnControl greenbtn uicontrols"
-                        onclick="sendButton(1)">&rarr;</button>
-                </div>
-                <div class="btnLine">
-                    <button id="btnCtrRotLeft" class="btnControl greenbtn uicontrols"
-                        onclick="sendButton(8)">&#8635;</button>
-                    <button id="btnCtrDown" class="btnControl greenbtn uicontrols"
-                        onclick="sendButton(3)">&darr;</button>
-                    <button id="btnCtrRotRight" class="btnControl greenbtn uicontrols"
-                        onclick="sendButton(7)">&#8634;</button>
-                </div>
-                <div class="btnLine">
-                    <button id="btnCtrDFU" class="btnControl redbtn uicontrols" onclick="sendButton(6)">DFU</button>
-                    <button id="btnCtrRST" class="btnControl redbtn uicontrols" onclick="sendReboot()">RESET</button>
-                </div>
-            </div>
-            <div class="devdatas">
-                <div id="devTemp">Temp: ?</div>
-                <div id="devGpsLat">Lat: ?</div>
-                <div id="devGpsLon">Lon: ?</div>
-                <div id="devHead">Heading: ?</div>
-                <div id="devGpsSats">Sats: ?</div>
-                <button onclick="getGPSPosition();" id="btnGps" class="uicontrols">&#128204;</button>
-                <button class="uicontrols" onclick="fileManOpen(); return false;">Open file manager</button>
-            </div>
-        </div>
-    </div>
-    <div id="manualcommand">
-        <input type="text" id="manualtxt" /><button onclick="manualSend()" id="btnManualSend"
-            class="uicontrols">Send</button>
-        <pre id="log"></pre>
-    </div>
+        <section id="manualcommand">
+            <h2>Manual Commands</h2>
+            <input type="text" id="manualtxt">
+            <button onclick="manualSend()">Send</button>
+            <pre id="log"></pre>
+        </section>
+    </main>
 
     <script>
         const PROMPT = "ch> ";
