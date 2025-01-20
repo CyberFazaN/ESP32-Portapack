@@ -9,4 +9,4 @@ idf_component_register(SRCS "tir.cpp" "ppshellcomm.cpp" "wifim.cpp" "led.cpp" "c
 "sgp4/visible.cpp"
 INCLUDE_DIRS "." "./sgp4"
 PRIV_REQUIRES i2cdev mpu9250 ahrs nvs_flash esp_timer spiffs esp_http_client esp_http_server app_update spi_flash esp_wifi qmc5883l esp_idf_lib_helpers
-EMBED_FILES ../data/index.html ../data/ota.html ../data/setup.html)
+EMBED_FILES ../data/index.html ../data/ota.html ../data/setup.html ../data/index.css)

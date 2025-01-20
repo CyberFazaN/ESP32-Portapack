@@ -32,6 +32,7 @@ static bool disable_esp_async = false;  // for example while in file transfer mo
 #define INDEX_HTML_PATH "/spiffs/index.html"
 #define SETUP_HTML_PATH "/spiffs/setup.html"
 #define OTA_HTML_PATH "/spiffs/ota.html"
+#define INDEX_CSS_PATH "/spiffs/index.css"
 
 static char setup_html_out[3000];
 extern const char index_start[] asm("_binary_index_html_start");
@@ -40,6 +41,8 @@ extern const char setup_start[] asm("_binary_setup_html_start");
 extern const char setup_end[] asm("_binary_setup_html_end");
 extern const char ota_start[] asm("_binary_ota_html_start");
 extern const char ota_end[] asm("_binary_ota_html_end");
+extern const char index_css_start[] asm("_binary_index_css_start");
+extern const char index_css_end[] asm("_binary_index_css_end");
 
 static inline int hex2int(char c) {
     if ('0' <= c && c <= '9') return c - '0';
@@ -83,13 +86,21 @@ static esp_err_t get_req_handler(httpd_req_t* req) {
     return response;
 }
 
+// index.css get handler
+static esp_err_t get_req_handler_index_css(httpd_req_t* req) {
+    const uint32_t index_len = index_css_end - index_css_start;
+    httpd_resp_set_type(req, "text/css");
+    int response = httpd_resp_send(req, index_css_start, index_len);
+    return response;
+}
+
 /// setup.html get handler
 static esp_err_t get_req_handler_setup(httpd_req_t* req) {
     snprintf(setup_html_out, sizeof(setup_html_out), setup_start, WifiM::wifiHostName, WifiM::wifiAPSSID, WifiM::wifiAPPASS, WifiM::wifiStaSSID, WifiM::wifiStaPASS, LedFeedback::get_brightness(), declinationAngle, gps_baud);
     int response = httpd_resp_send(req, setup_html_out, HTTPD_RESP_USE_STRLEN);
     return response;
 }
-/// setup.html get handler
+/// ota.html get handler
 static esp_err_t get_req_handler_ota(httpd_req_t* req) {
     const uint32_t ota_len = ota_end - ota_start;
     int response = httpd_resp_send(req, ota_start, ota_len);
@@ -369,6 +380,13 @@ static httpd_handle_t setup_websocket_server(void) {
                            .is_websocket = false,
                            .handle_ws_control_frames = false,
                            .supported_subprotocol = NULL};
+    httpd_uri_t uri_get_index_css = {.uri = "/index.css",
+                           .method = HTTP_GET,
+                           .handler = get_req_handler_index_css,
+                           .user_ctx = NULL,
+                           .is_websocket = false,
+                           .handle_ws_control_frames = false,
+                           .supported_subprotocol = NULL};
     httpd_uri_t uri_postsetup = {.uri = "/setup.html",
                                  .method = HTTP_POST,
                                  .handler = post_req_handler_setup,
@@ -407,6 +425,7 @@ static httpd_handle_t setup_websocket_server(void) {
 
     if (httpd_start(&server, &config) == ESP_OK) {
         httpd_register_uri_handler(server, &uri_get);
+        httpd_register_uri_handler(server, &uri_get_index_css);
         httpd_register_uri_handler(server, &uri_getsetup);
         httpd_register_uri_handler(server, &uri_postsetup);
         httpd_register_uri_handler(server, &uri_getota);
