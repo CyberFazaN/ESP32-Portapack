@@ -27,7 +27,9 @@ typedef enum
     BMx280,
     SHT3x,
     LSM303_ACCEL,
-    LSM303_MAG
+    LSM303_MAG,
+    AK8963,
+    QMC5883L,
 } SENSORS;
 
 #if __cplusplus

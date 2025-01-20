@@ -8,6 +8,9 @@ uint8_t BMx280_addr = 0;
 uint8_t SHT3x_addr = 0;
 uint8_t LSM303_addr_mag = 0;
 uint8_t LSM303_addr_acc = 0;
+uint8_t AK8963_addr = 0;
+uint8_t ITG3200_addr = 0;
+uint8_t QMC5883L_addr = 0;
 
 void foundI2CDev(uint8_t addr)
 {
@@ -30,9 +33,13 @@ void foundI2CDev(uint8_t addr)
 
     if (addr == 0x1E)
         HMC5883L_addr = 0x1E;
+    if (addr == 0x0D)
+        QMC5883L_addr = 0x0D;
 
     if (addr == 0x68)
         MPU925X_addr = 0x68;
+    if (addr == 0x68)
+        ITG3200_addr = 0x68;
 
     if (addr == 0x18)
         LSM303_addr_acc = 0x18;
@@ -40,6 +47,8 @@ void foundI2CDev(uint8_t addr)
         LSM303_addr_mag = 0x1d;
     if (addr == 0x1e)
         LSM303_addr_mag = 0x1e;
+    if (addr == 0x0c)
+        AK8963_addr = 0x0c;
 }
 
 uint8_t getDevAddr(SENSORS sensor)
@@ -48,20 +57,34 @@ uint8_t getDevAddr(SENSORS sensor)
     {
     case BH1750:
         return BH1750_addr;
+        break;
     case HMC5883L:
         return HMC5883L_addr;
+        break;
     case ADXL345:
         return ADXL345_addr;
+        break;
     case MPU925X:
         return MPU925X_addr;
+        break;
     case BMx280:
         return BMx280_addr;
+        break;
     case SHT3x:
         return SHT3x_addr;
+        break;
     case LSM303_ACCEL:
         return LSM303_addr_acc;
+        break;
     case LSM303_MAG:
         return LSM303_addr_mag;
+        break;
+    case AK8963:
+        return AK8963_addr;
+        break;
+    case QMC5883L:
+        return QMC5883L_addr;
+        break;
     default:
         return 0;
         break;

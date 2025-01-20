@@ -13,7 +13,7 @@
 #include <math.h>
 #include "esp_log.h"
 // include supported modules
-#include "drivers/i2cdev.h"
+#include "i2cdev.h"
 
 #include "drivers/bmp280.h"
 #include "drivers/bh1750.h"

@@ -96,7 +96,7 @@ bool WifiM::wifi_apsta() {
     wifi_config_t sta_config = {};
     strcpy((char*)sta_config.sta.ssid, wifiStaSSID);
     strcpy((char*)sta_config.sta.password, wifiStaPASS);
-    sta_config.sta.failure_retry_cnt = 1;
+    sta_config.sta.failure_retry_cnt = 2;
 
     ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_APSTA));
     ESP_ERROR_CHECK(esp_wifi_set_config((wifi_interface_t)ESP_IF_WIFI_AP, &ap_config));
@@ -128,7 +128,7 @@ void WifiM::load_config_wifi() {
         strcpy(wifiAPSSID, DEFAULT_WIFI_AP);
         strcpy(wifiAPPASS, DEFAULT_WIFI_PASS);
         strcpy(wifiStaSSID, DEFAULT_WIFI_STA);
-        strcpy(wifiStaPASS, DEFAULT_WIFI_PASS);
+        strcpy(wifiStaPASS, DEFAULT_WIFI_STA_PASS);
         strcpy(wifiHostName, DEFAULT_WIFI_HOSTNAME);
     } else {
         size_t size = sizeof(wifiAPSSID);
@@ -147,7 +147,7 @@ void WifiM::load_config_wifi() {
         size = sizeof(wifiStaPASS);
         nvs_get_str(nvs_handle, "wifiStaPASS", wifiStaPASS, &size);
         if (strlen(wifiStaPASS) < 1)
-            strcpy(wifiStaPASS, DEFAULT_WIFI_PASS);
+            strcpy(wifiStaPASS, DEFAULT_WIFI_STA_PASS);
         size = sizeof(wifiHostName);
         nvs_get_str(nvs_handle, "wifiHostName", wifiHostName, &size);
         if (strlen(wifiHostName) < 1) {

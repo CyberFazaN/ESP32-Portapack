@@ -22,34 +22,42 @@ void init_environment()
     // BMP280
     bmp280_params_t params_bmp280;
     bmp280_init_default_params(&params_bmp280);
-    memset(&dev_bmp280, 0, sizeof(bmp280_t));
-    if (bmp280_init_desc(&dev_bmp280, getDevAddr(BMx280), 0, CONFIG_IC2SDAPIN, CONFIG_IC2SCLPIN) == ESP_OK && bmp280_init(&dev_bmp280, &params_bmp280) == ESP_OK)
-    {
-        if ((dev_bmp280.id == BME280_CHIP_ID))
+    uint8_t bmp280_addr = getDevAddr(BMx280);
+    if (bmp280_addr != 0){
+        memset(&dev_bmp280, 0, sizeof(bmp280_t));
+        if (bmp280_init_desc(&dev_bmp280, getDevAddr(BMx280), 0, CONFIG_IC2SDAPIN, CONFIG_IC2SCLPIN) == ESP_OK && bmp280_init(&dev_bmp280, &params_bmp280) == ESP_OK)
         {
-            ESP_LOGI("Environment", "bme280 OK");
+            if ((dev_bmp280.id == BME280_CHIP_ID))
+            {
+                ESP_LOGI("Environment", "bme280 OK");
+            }
+            else
+            {
+                ESP_LOGI("Environment", "bmp280 OK");
+            }
+            environment_inited = environment_inited | ((dev_bmp280.id == BME280_CHIP_ID) ? Environment_bme280 : Environment_bmp280);
+            return;
         }
         else
         {
-            ESP_LOGI("Environment", "bmp280 OK");
+            // deinit
+            bmp280_free_desc(&dev_bmp280);
         }
-        environment_inited = environment_inited | ((dev_bmp280.id == BME280_CHIP_ID) ? Environment_bme280 : Environment_bmp280);
-        return;
-    }
-    else
-    {
-        // deinit
-        bmp280_free_desc(&dev_bmp280);
     }
 
     // sht3x
-    memset(&sht3x, 0, sizeof(sht3x_t));
-    if (sht3x_init_desc(&sht3x, getDevAddr(SHT3x), 0, CONFIG_IC2SDAPIN, CONFIG_IC2SCLPIN) == ESP_OK && sht3x_init(&sht3x) == ESP_OK)
-    {
-        vTaskDelay(50 / portTICK_PERIOD_MS);
-        sht3x_start_measurement(&sht3x, SHT3X_PERIODIC_1MPS, SHT3X_HIGH);
-        environment_inited = environment_inited | Environment_sht3x;
-        ESP_LOGI("Environment", "sht3x OK");
+    uint8_t sht3x_addr = getDevAddr(SHT3x);
+    if (sht3x_addr != 0){
+        memset(&sht3x, 0, sizeof(sht3x_t));
+        if (sht3x_init_desc(&sht3x, getDevAddr(SHT3x), 0, CONFIG_IC2SDAPIN, CONFIG_IC2SCLPIN) == ESP_OK && sht3x_init(&sht3x) == ESP_OK)
+        {
+            vTaskDelay(50 / portTICK_PERIOD_MS);
+            sht3x_start_measurement(&sht3x, SHT3X_PERIODIC_1MPS, SHT3X_HIGH);
+            environment_inited = environment_inited | Environment_sht3x;
+            ESP_LOGI("Environment", "sht3x OK");
+        }else{
+            sht3x_free_desc(&sht3x);
+        }
     }
 
     // end of list
@@ -86,16 +94,19 @@ void init_environment_light()
     environment_light_inited = Environment_light_none;
 
     // bh1750
-    memset(&bh1750, 0, sizeof(i2c_dev_t));
-    if (bh1750_init_desc(&bh1750, getDevAddr(BH1750), 0, CONFIG_IC2SDAPIN, CONFIG_IC2SCLPIN) == ESP_OK && bh1750_setup(&bh1750, BH1750_MODE_CONTINUOUS, BH1750_RES_HIGH) == ESP_OK)
-    {
-        bh1750_power_on(&bh1750);
-        ESP_LOGI("EnvironmentLight", "bh1750 OK");
-        environment_light_inited = environment_light_inited | Environment_light_bh1750;
-    }
-    else
-    {
-        bh1750_free_desc(&bh1750);
+    uint8_t bh1750_addr = getDevAddr(BH1750);
+    if (bh1750_addr != 0){
+        memset(&bh1750, 0, sizeof(i2c_dev_t));
+        if (bh1750_init_desc(&bh1750, getDevAddr(BH1750), 0, CONFIG_IC2SDAPIN, CONFIG_IC2SCLPIN) == ESP_OK && bh1750_setup(&bh1750, BH1750_MODE_CONTINUOUS, BH1750_RES_HIGH) == ESP_OK)
+        {
+            bh1750_power_on(&bh1750);
+            ESP_LOGI("EnvironmentLight", "bh1750 OK");
+            environment_light_inited = environment_light_inited | Environment_light_bh1750;
+        }
+        else
+        {
+            bh1750_free_desc(&bh1750);
+        }
     }
 }
 

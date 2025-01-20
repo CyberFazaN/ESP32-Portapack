@@ -14,6 +14,7 @@
 #define DEFAULT_WIFI_AP "ESP32PP"
 #define DEFAULT_WIFI_PASS "12345678"
 #define DEFAULT_WIFI_STA "Hotspot"
+#define DEFAULT_WIFI_STA_PASS "12345678"
 
 #include <string.h>
 #include "esp_event.h"

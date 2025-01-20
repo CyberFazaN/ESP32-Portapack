@@ -41,6 +41,41 @@ extern const char setup_end[] asm("_binary_setup_html_end");
 extern const char ota_start[] asm("_binary_ota_html_start");
 extern const char ota_end[] asm("_binary_ota_html_end");
 
+static inline int hex2int(char c) {
+    if ('0' <= c && c <= '9') return c - '0';
+    if ('a' <= c && c <= 'f') return c - 'a' + 10;
+    if ('A' <= c && c <= 'F') return c - 'A' + 10;
+    return -1;
+}
+
+void url_decode(const char *src, char *dest, size_t dest_len) {
+    size_t i = 0, j = 0;
+
+    while (src[i] != '\0' && j < dest_len - 1) {
+        if (src[i] == '%') {
+            if (isxdigit((unsigned char)src[i + 1]) && isxdigit((unsigned char)src[i + 2])) {
+                int hi = hex2int(src[i + 1]);
+                int lo = hex2int(src[i + 2]);
+                if (hi != -1 && lo != -1) {
+                    dest[j++] = (hi << 4) | lo;
+                    i += 3;
+                } else {
+                    dest[j++] = src[i++];
+                }
+            } else {
+                dest[j++] = src[i++];
+            }
+        } else if (src[i] == '+') {
+            dest[j++] = ' ';
+            i++;
+        } else {
+            dest[j++] = src[i++];
+        }
+    }
+
+    // dest[j] = '\0'; // Null-terminate the decoded string
+}
+
 // root / get handler.
 static esp_err_t get_req_handler(httpd_req_t* req) {
     const uint32_t index_len = index_end - index_start;
@@ -74,15 +109,25 @@ static int find_post_value(char* key, char* parameter, char* value) {
 
     char* addr3 = strstr(addr2, "&");
     ESP_LOGD("WEBS", "addr3=%p", addr3);
+
+    char encoded[128] = {0};
+
     if (addr3 == NULL) {
-        strcpy(value, addr2);
+        strcpy(encoded, addr2);
     } else {
         int length = addr3 - addr2;
         ESP_LOGD("WEBS", "addr2=%p addr3=%p length=%d", addr2, addr3, length);
-        strncpy(value, addr2, length);
-        value[length] = 0;
+        strncpy(encoded, addr2, length);
+        encoded[length] = '\0';
     }
-    ESP_LOGI("WEBS", "key=[%s] value=[%s]", key, value);
+    ESP_LOGI("WEBS", "key=[%s] enc_value=[%s]", key, encoded);
+
+    char decoded[65] = {0};
+
+    url_decode(encoded, decoded, strlen(encoded) + 1);
+    strncpy(value, decoded, 65 - 1);
+    ESP_LOGI("WEBS", "key=[%s] dec_value=[%s]", key, decoded);
+
     return strlen(value);
 }
 

@@ -15,29 +15,33 @@
 #include "esp_log.h"
 
 // include supported modules
-#include "drivers/i2cdev.h"
+#include "i2cdev.h"
 
 #include "drivers/hmc5883l.h" //only 2d and maybe the ADXL345 for 3d
 #include "drivers/adxl345.h"  //gyro for hmc5883l
-#include "drivers/mpu925x.h"  //maybe faulty!
+// #include "drivers/mpu925x.h"  //maybe faulty!
+#include "mpu9250.h"
+#include "ak8963.h"
 #include "drivers/lsm303.h"
+#include "qmc5883l.h"
 
 #define M_PI 3.14159265358979323846
 
 typedef enum OrientationSensors
 {
     Orientation_none = 0,
-    Orientation_hmc5883l = 1,
-    Orientation_mpu925x = 2,
-    Orientation_lsm303 = 4,
+    Orientation_hmc5883l = 1 << 0,
+    Orientation_mpu925x = 1 << 1,
+    Orientation_lsm303 = 1 << 2,
+    Orientation_qmc5883l = 1 << 3
 } OrientationSensors;
 
 typedef enum AcceloSensors
 {
     Accelo_none = 0,
-    Accelo_ADXL345 = 1,
-    Accelo_MPU925x = 2,
-    Accelo_LSM303 = 4
+    Accelo_ADXL345 = 1 << 0,
+    Accelo_MPU925x = 1 << 1,
+    Accelo_LSM303 = 1 << 2
 } AcceloSensors;
 
 #if __cplusplus

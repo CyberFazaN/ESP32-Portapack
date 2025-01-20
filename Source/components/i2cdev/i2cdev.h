@@ -46,8 +46,13 @@ extern "C"
 {
 #endif
 
+#ifndef CONFIG_I2CDEV_TIMEOUT
 #define CONFIG_I2CDEV_TIMEOUT 100
+#endif
+
+#ifndef CONFIG_I2CDEV_NOLOCK
 #define CONFIG_I2CDEV_NOLOCK 1
+#endif
 
 #if HELPER_TARGET_IS_ESP8266
 

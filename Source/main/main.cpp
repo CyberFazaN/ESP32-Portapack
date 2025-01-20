@@ -151,7 +151,7 @@ static void i2c_scan() {
         dev.addr = i;
         res = i2c_dev_probe(&dev, I2C_DEV_WRITE);
         if (res == 0) {
-            printf("Found device at: 0x%2x\n", i);
+            printf("Found device at: 0x%02x\n", i);
             foundI2CDev(i);
         }
     }
